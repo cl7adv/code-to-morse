@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODE TO MORSE PRO | Professional CW Station</title>
+    <title>CODE TO MORSE PRO | Universal Decoder</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap');
 
@@ -11,545 +11,383 @@
             --neon-green: #00ff41;
             --dark-bg: #050505;
             --panel-bg: #121212;
-            --border-glow: rgba(0, 255, 65, 0.3);
             --danger: #ff3e3e;
             --cyan: #00f2ff;
+            --gray: #333;
         }
 
         body {
             background-color: var(--dark-bg);
             color: var(--neon-green);
             font-family: 'Share Tech Mono', monospace;
-            margin: 0;
-            padding: 20px;
-            overflow-x: hidden;
+            margin: 0; padding: 20px;
         }
 
-        /* --- Layout Estructura --- */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 350px 1fr 300px;
-            gap: 20px;
-            max-width: 1600px;
+        .main-container {
+            max-width: 1200px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
         }
 
-        .header-station {
+        .header {
             grid-column: 1 / -1;
             text-align: center;
-            border: 2px solid var(--neon-green);
-            padding: 10px;
-            background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+            border: 1px solid var(--neon-green);
+            padding: 15px;
             box-shadow: 0 0 15px var(--border-glow);
-            margin-bottom: 20px;
-        }
-
-        .header-station h1 {
-            font-family: 'Orbitron', sans-serif;
-            margin: 0;
-            letter-spacing: 5px;
-            text-transform: uppercase;
+            background: rgba(0, 255, 65, 0.05);
         }
 
         .panel {
             background: var(--panel-bg);
             border: 1px solid var(--neon-green);
-            padding: 15px;
-            border-radius: 4px;
-            box-shadow: inset 0 0 10px #000;
-            position: relative;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        /* --- Gráficos Avanzados --- */
-        .canvas-container {
+        /* --- VISUALIZADORES --- */
+        .display-box {
             background: #000;
-            border: 1px solid #333;
-            height: 150px;
+            border: 1px solid var(--gray);
+            height: 120px;
             margin-bottom: 10px;
             position: relative;
         }
 
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
+        canvas { width: 100%; height: 100%; }
 
-        .label-overlay {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            font-size: 10px;
-            color: var(--cyan);
-            pointer-events: none;
-        }
-
-        /* --- Consola de Texto --- */
         .terminal {
             background: #000;
-            border: 1px solid #222;
+            border: 1px solid var(--neon-green);
             color: #fff;
-            padding: 10px;
-            height: 200px;
+            padding: 15px;
+            height: 250px;
             overflow-y: auto;
-            font-size: 1.2rem;
-            line-height: 1.5;
-            margin: 10px 0;
+            font-size: 1.5rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            box-shadow: inset 0 0 10px var(--neon-green);
         }
 
-        .morse-live {
-            color: var(--cyan);
-            height: 20px;
-            font-weight: bold;
-            margin-bottom: 5px;
+        /* --- CONTROLES --- */
+        .control-row {
+            margin-bottom: 20px;
         }
 
-        /* --- Controles --- */
-        .control-group {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            font-size: 12px;
-            margin-bottom: 5px;
+        .slider-label {
             display: flex;
             justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 5px;
         }
 
         input[type="range"] {
-            -webkit-appearance: none;
-            background: #222;
-            height: 4px;
+            width: 100%;
+            height: 10px;
+            background: var(--gray);
+            border-radius: 5px;
             outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 15px;
-            height: 15px;
-            background: var(--neon-green);
-            cursor: pointer;
-            box-shadow: 0 0 5px var(--neon-green);
+            accent-color: var(--neon-green);
         }
 
         button {
+            width: 100%;
+            padding: 12px;
             background: transparent;
             border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            padding: 10px;
             font-family: 'Orbitron', sans-serif;
-            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
             text-transform: uppercase;
-            margin-top: 5px;
+            margin-bottom: 10px;
+            transition: 0.2s;
         }
 
         button:hover {
             background: var(--neon-green);
             color: #000;
-            box-shadow: 0 0 20px var(--neon-green);
+            box-shadow: 0 0 15px var(--neon-green);
         }
 
-        .btn-danger { border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: #fff; box-shadow: 0 0 20px var(--danger); }
-
-        /* --- Indicadores --- */
-        .led-panel {
+        /* --- INDICADORES --- */
+        .status-bar {
             display: flex;
             justify-content: space-around;
-            padding: 10px;
             background: #000;
-            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid var(--gray);
+            margin-bottom: 15px;
         }
 
-        .indicator {
-            text-align: center;
-            font-size: 10px;
-        }
-
+        .led-group { text-align: center; font-size: 10px; }
         .led {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #1a1a1a;
-            margin: 0 auto 5px;
-            border: 1px solid #333;
+            width: 25px; height: 25px; border-radius: 50%;
+            background: #111; margin: 0 auto 5px;
+            border: 1px solid #444;
+        }
+        .led.active { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+        .led.active-rx { background: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
+
+        .morse-buffer {
+            color: var(--cyan);
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            height: 30px;
+            text-align: center;
         }
 
-        .led.on { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
-        .led.rx-on { background: var(--cyan); box-shadow: 0 0 15px var(--cyan); }
-
-        /* --- Log de Estación --- */
-        .station-log {
-            font-size: 11px;
-            color: #666;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .log-entry {
-            border-bottom: 1px solid #222;
-            padding: 5px 0;
-        }
-
-        .log-time { color: var(--cyan); }
-
-        /* Estilo para el área de texto TX */
-        #txInput {
-            width: 100%;
-            height: 80px;
-            background: #000;
-            color: var(--neon-green);
-            border: 1px solid #333;
-            padding: 10px;
-            box-sizing: border-box;
-            resize: none;
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-green); }
+        .info-text { font-size: 11px; color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header-station">
-    <h1>CODE TO MORSE PRO - MULTI-TOOL STATION</h1>
+<div class="header">
+    <h1 style="margin:0; letter-spacing: 4px;">SYSTEM CODE-TO-MORSE v3.0</h1>
 </div>
 
-<div class="main-grid">
+<div class="main-container">
     <div class="panel">
-        <h3>ESTACIÓN DE TRANSMISIÓN</h3>
-        <div class="led-panel">
-            <div class="indicator"><div id="txLed" class="led"></div>TX</div>
-            <div class="indicator"><div id="powerLed" class="led on"></div>PWR</div>
+        <div class="status-bar">
+            <div class="led-group"><div id="pwrLed" class="led active"></div>PWR</div>
+            <div class="led-group"><div id="rxLed" class="led"></div>SIG</div>
+            <div class="led-group"><div id="txLed" class="led"></div>TX</div>
         </div>
 
-        <div class="control-group">
-            <label>Velocidad (WPM) <span id="wpmVal">20</span></label>
-            <input type="range" id="wpmSlider" min="5" max="50" value="20">
+        <button onclick="startAudio()" id="initBtn">CONECTAR AUDIO</button>
+
+        <div class="control-row">
+            <div class="slider-label">SQUELCH (UMBRAL) <span id="sqVal">100</span></div>
+            <input type="range" id="sqSlider" min="0" max="255" value="100">
         </div>
 
-        <div class="control-group">
-            <label>Tono de Audio (Hz) <span id="pitchVal">700</span></label>
-            <input type="range" id="pitchSlider" min="400" max="1200" value="700">
+        <div class="control-row">
+            <div class="slider-label">FRECUENCIA OBJETIVO <span id="freqVal">700</span>Hz</div>
+            <input type="range" id="freqSlider" min="300" max="1500" value="700">
         </div>
 
-        <div class="control-group">
-            <label>Volumen <span id="volVal">50</span></label>
-            <input type="range" id="volSlider" min="0" max="100" value="50">
+        <div class="control-row">
+            <div class="slider-label">ANCHO DE BANDA <span id="bwVal">150</span>Hz</div>
+            <input type="range" id="bwSlider" min="20" max="500" value="150">
         </div>
 
-        <textarea id="txInput" placeholder="INTRODUZCA MENSAJE PARA CW..."></textarea>
-        <button onclick="transmitMessage()" style="width: 100%;">TRANSMITIR CW</button>
-        <button onclick="stopTX()" class="btn-danger" style="width: 100%;">ABORTAR TX</button>
+        <hr style="border:0; border-top:1px solid var(--gray);">
         
-        <div style="margin-top: 20px;">
-            <h4>ACCIONES RÁPIDAS</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                <button onclick="quickTX('CQ CQ CQ DE EA1XYZ')">CQ CQ</button>
-                <button onclick="quickTX('73 ES GL SK')">73 ES GL</button>
-            </div>
+        <h3>TRANSMISOR</h3>
+        <textarea id="txInput" style="width:100%; height:60px; background:#000; color:var(--neon-green); border:1px solid var(--gray);" placeholder="Texto a CW..."></textarea>
+        <button onclick="transmitCW()">TRANSMITIR</button>
+        
+        <div class="info-text">
+            * Ajusta el Squelch hasta que el LED "SIG" solo brille con los pitidos de YouTube.
         </div>
     </div>
 
     <div class="panel">
-        <div class="canvas-container">
-            <div class="label-overlay">SPECTRUM ANALYZER (FFT)</div>
-            <canvas id="freqCanvas"></canvas>
+        <div class="display-box">
+            <canvas id="spectrogram"></canvas>
         </div>
-        <div class="canvas-container">
-            <div class="label-overlay">WAVEFORM (TIME DOMAIN)</div>
-            <canvas id="timeCanvas"></canvas>
-        </div>
-
-        <div class="morse-live" id="morseBuffer">...</div>
-        <div class="terminal" id="rxTerminal"></div>
         
-        <div style="display: flex; gap: 10px;">
-            <button onclick="initAudio()" id="startBtn" style="flex: 1;">INICIAR SISTEMA DE AUDIO</button>
-            <button onclick="clearTerminal()" style="flex: 0.3;">CLEAR</button>
-        </div>
-    </div>
-
-    <div class="panel">
-        <h3>RX CONFIGURATION</h3>
-        <div class="led-panel">
-            <div class="indicator"><div id="rxLed" class="led"></div>RX</div>
-            <div class="indicator"><div id="signalLed" class="led"></div>SIGNAL</div>
-        </div>
-
-        <div class="control-group">
-            <label>Umbral Squelch <span id="sqVal">120</span></label>
-            <input type="range" id="sqSlider" min="0" max="255" value="120">
-        </div>
-
-        <div class="control-group">
-            <label>Ancho Filtro (Hz) <span id="bwVal">100</span></label>
-            <input type="range" id="bwSlider" min="10" max="500" value="100">
-        </div>
-
-        <h4>LOG DE ESTACIÓN</h4>
-        <div class="station-log" id="logList">
-            <div class="log-entry">ESTACIÓN INICIALIZADA. ESPERANDO DATOS...</div>
+        <div class="morse-buffer" id="bufferDisplay"></div>
+        <div class="terminal" id="output"></div>
+        
+        <div style="display:flex; gap:10px;">
+            <button onclick="clearDisplay()">LIMPIAR TERMINAL</button>
+            <button onclick="downloadLog()" style="border-color:var(--cyan); color:var(--cyan);">GUARDAR LOG</button>
         </div>
     </div>
 </div>
 
 <script>
     /**
-     * MÓDULO 1: DICCIONARIO Y VARIABLES GLOBALES
+     * LÓGICA DE PROCESAMIENTO DE SEÑAL Y TRADUCCIÓN (DECODER)
      */
-    const MORSE_LIB = {
+    const MORSE_CODE = {
         '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H',
         '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P',
         '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
         '-.--': 'Y', '--..': 'Z', '.----': '1', '..---': '2', '...--': '3', '....-': '4', '.....': '5',
-        '-....': '6', '--...': '7', '---..': '8', '----.': '9', '-----': '0', '.-.-.-': '.', '--..--': ',',
-        '..--..': '?', '-....-': '-', '-..-.': '/', '---...': ':', '.----.': "'", '-.-.--': '!'
+        '-....': '6', '--...': '7', '---..': '8', '----.': '9', '-----': '0', '/': ' '
     };
-    const TEXT_TO_MORSE = Object.fromEntries(Object.entries(MORSE_LIB).map(([k, v]) => [v, k]));
 
-    let audioCtx, analyzer, microphone, biquadFilter, gainNode;
-    let isTxRunning = false;
-    let systemInitialized = false;
+    let audioCtx, analyzer, microphone, filter;
+    let signalIsActive = false;
+    let signalStart = 0;
+    let silenceStart = Date.now();
+    let symbolsAccumulator = "";
+    let isInitialized = false;
 
-    // Variables de decodificación
-    let signalActive = false;
-    let signalStartTime = 0;
-    let silenceStartTime = Date.now();
-    let currentSymbols = "";
+    // Actualizar labels de sliders
+    document.querySelectorAll('input[type="range"]').forEach(s => {
+        s.oninput = () => {
+            document.getElementById(s.id.replace('Slider', 'Val')).innerText = s.value;
+            if(isInitialized && s.id === 'freqSlider') filter.frequency.value = s.value;
+            if(isInitialized && s.id === 'bwSlider') filter.Q.value = s.value / 10;
+        };
+    });
 
-    /**
-     * MÓDULO 2: INICIALIZACIÓN DE AUDIO AVANZADO
-     */
-    async function initAudio() {
-        if (systemInitialized) return;
-        
+    async function startAudio() {
+        if(isInitialized) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             microphone = audioCtx.createMediaStreamSource(stream);
             
-            // Filtro Biquad para aislar el CW
-            biquadFilter = audioCtx.createBiquadFilter();
-            biquadFilter.type = "bandpass";
-            biquadFilter.frequency.value = document.getElementById('pitchSlider').value;
-            biquadFilter.Q.value = 5;
+            // Filtro paso-banda para limpiar el audio de YouTube
+            filter = audioCtx.createBiquadFilter();
+            filter.type = "bandpass";
+            filter.frequency.value = document.getElementById('freqSlider').value;
+            filter.Q.value = 2; // Un poco ancho para atrapar variaciones
 
             analyzer = audioCtx.createAnalyser();
-            analyzer.fftSize = 1024;
+            analyzer.fftSize = 2048;
 
-            microphone.connect(biquadFilter);
-            biquadFilter.connect(analyzer);
+            microphone.connect(filter);
+            filter.connect(analyzer);
 
-            addLog("MICRÓFONO CONECTADO Y FILTROS ACTIVOS.");
-            systemInitialized = true;
-            document.getElementById('startBtn').innerText = "AUDIO ONLINE";
-            document.getElementById('startBtn').style.borderColor = "var(--cyan)";
-            
-            drawVisuals();
-            processRX();
+            isInitialized = true;
+            document.getElementById('initBtn').innerText = "ONLINE";
+            document.getElementById('initBtn').style.background = "var(--neon-green)";
+            document.getElementById('initBtn').style.color = "#000";
+
+            renderVisuals();
+            decodeLoop();
         } catch (e) {
-            addLog("ERROR: ACCESO A AUDIO DENEGADO.");
+            alert("Acceso al micrófono denegado. Revisa los permisos.");
         }
     }
 
-    /**
-     * MÓDULO 3: PROCESAMIENTO DE SEÑAL Y TRADUCCIÓN
-     */
-    function processRX() {
+    function decodeLoop() {
         const dataArray = new Uint8Array(analyzer.frequencyBinCount);
         analyzer.getByteFrequencyData(dataArray);
 
-        // Encontrar energía en el tono objetivo
-        const freq = document.getElementById('pitchSlider').value;
-        const index = Math.floor(freq / (audioCtx.sampleRate / analyzer.fftSize));
-        const magnitude = dataArray[index];
+        // Buscamos la frecuencia con más energía en el rango seleccionado
+        const freqTarget = document.getElementById('freqSlider').value;
+        const index = Math.floor(freqTarget / (audioCtx.sampleRate / analyzer.fftSize));
+        
+        // Promediamos un poco alrededor de la frecuencia para ser más tolerantes
+        const volume = (dataArray[index] + dataArray[index-1] + dataArray[index+1]) / 3;
         const threshold = document.getElementById('sqSlider').value;
 
-        const isPressed = magnitude > threshold;
         const now = Date.now();
+        const rxLed = document.getElementById('rxLed');
 
-        if (isPressed !== signalActive) {
-            if (isPressed) {
+        if (volume > threshold) {
+            if (!signalIsActive) {
                 // Inicio de pulso
-                const silenceDuration = now - silenceStartTime;
-                if (silenceDuration > 600) appendToTerminal(" ");
-                signalStartTime = now;
-                document.getElementById('rxLed').classList.add('rx-on');
-                document.getElementById('signalLed').classList.add('on');
-            } else {
+                const silenceDuration = now - silenceStart;
+                if (silenceDuration > 800) appendText(" "); // Nueva palabra
+                signalStart = now;
+                signalIsActive = true;
+                rxLed.classList.add('active-rx');
+            }
+        } else {
+            if (signalIsActive) {
                 // Fin de pulso
-                const duration = now - signalStartTime;
-                if (duration > 20 && duration < 250) currentSymbols += ".";
-                else if (duration >= 250) currentSymbols += "-";
+                const pulseDuration = now - signalStart;
+                if (pulseDuration > 20 && pulseDuration < 200) symbolsAccumulator += ".";
+                else if (pulseDuration >= 200) symbolsAccumulator += "-";
                 
-                document.getElementById('morseBuffer').innerText = currentSymbols;
-                document.getElementById('rxLed').classList.remove('rx-on');
-                document.getElementById('signalLed').classList.remove('on');
-            }
-            signalActive = isPressed;
-        }
-
-        if (!isPressed && currentSymbols !== "") {
-            const silenceDuration = now - silenceStartTime;
-            if (silenceDuration > 300) {
-                const char = MORSE_LIB[currentSymbols] || "?";
-                appendToTerminal(char);
-                currentSymbols = "";
-                document.getElementById('morseBuffer').innerText = "";
+                document.getElementById('bufferDisplay').innerText = symbolsAccumulator;
+                silenceStart = now;
+                signalIsActive = false;
+                rxLed.classList.remove('active-rx');
             }
         }
 
-        if (!isPressed) silenceStartTime = now;
-        
-        // Mantener filtro actualizado
-        biquadFilter.frequency.value = document.getElementById('pitchSlider').value;
-        biquadFilter.Q.value = 1000 / document.getElementById('bwSlider').value;
+        // Si hay silencio por más de 350ms, traducimos el grupo de símbolos
+        if (!signalIsActive && symbolsAccumulator !== "") {
+            if (now - silenceStart > 350) {
+                const letter = MORSE_CODE[symbolsAccumulator] || "?";
+                appendText(letter);
+                symbolsAccumulator = "";
+                document.getElementById('bufferDisplay').innerText = "";
+            }
+        }
 
-        requestAnimationFrame(processRX);
+        requestAnimationFrame(decodeLoop);
+    }
+
+    function renderVisuals() {
+        const canvas = document.getElementById('spectrogram');
+        const ctx = canvas.getContext('2d');
+        const bufferLength = analyzer.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function draw() {
+            analyzer.getByteFrequencyData(dataArray);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = dataArray[i] / 2;
+                ctx.fillStyle = i === Math.floor(document.getElementById('freqSlider').value / (audioCtx.sampleRate / analyzer.fftSize)) 
+                                ? 'var(--cyan)' : 'var(--neon-green)';
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    function appendText(char) {
+        const out = document.getElementById('output');
+        out.innerText += char;
+        out.scrollTop = out.scrollHeight;
+    }
+
+    function clearDisplay() { document.getElementById('output').innerText = ""; }
+
+    function downloadLog() {
+        const text = document.getElementById('output').innerText;
+        const blob = new Blob([text], {type: 'text/plain'});
+        const anchor = document.createElement('a');
+        anchor.download = "morse_log.txt";
+        anchor.href = window.URL.createObjectURL(blob);
+        anchor.click();
     }
 
     /**
-     * MÓDULO 4: TRANSMISIÓN (TX)
+     * TRANSMISOR (TX)
      */
-    async function transmitMessage() {
-        if (!systemInitialized || isTxRunning) {
-            alert("Inicie el audio primero.");
-            return;
-        }
-        
-        isTxRunning = true;
+    async function transmitCW() {
+        if(!isInitialized) { alert("Inicia audio primero"); return; }
         const text = document.getElementById('txInput').value.toUpperCase();
-        addLog("TX INICIADO: " + text);
-        
-        const wpm = document.getElementById('wpmSlider').value;
-        const unit = 1200 / wpm;
-        const freq = document.getElementById('pitchSlider').value;
+        const unit = 1200 / 20; // 20 WPM
+        const freq = document.getElementById('freqSlider').value;
 
         for (let char of text) {
-            if (!isTxRunning) break;
-            const code = TEXT_TO_MORSE[char] || (char === " " ? "/" : "");
-            
+            const code = Object.keys(MORSE_CODE).find(key => MORSE_CODE[key] === char) || (char === ' ' ? '/' : '');
             for (let s of code) {
-                if (!isTxRunning) break;
-                if (s === ".") await oscillatorBeep(unit, freq);
-                else if (s === "-") await oscillatorBeep(unit * 3, freq);
-                else if (s === "/") await sleep(unit * 7);
+                if (s === '.') await beep(unit, freq);
+                else if (s === '-') await beep(unit * 3, freq);
+                else if (s === '/') await sleep(unit * 7);
                 await sleep(unit);
             }
             await sleep(unit * 3);
         }
-        isTxRunning = false;
-        addLog("TX FINALIZADO.");
     }
 
-    function oscillatorBeep(dur, freq) {
+    function beep(d, f) {
         return new Promise(res => {
-            const osc = audioCtx.createOscillator();
+            const o = audioCtx.createOscillator();
             const g = audioCtx.createGain();
-            osc.type = "sine";
-            osc.frequency.value = freq;
-            
-            g.gain.value = document.getElementById('volSlider').value / 100;
-            osc.connect(g);
-            g.connect(audioCtx.destination);
-            
-            document.getElementById('txLed').classList.add('on');
-            osc.start();
-            setTimeout(() => {
-                osc.stop();
-                document.getElementById('txLed').classList.remove('on');
-                res();
-            }, dur);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.frequency.value = f;
+            document.getElementById('txLed').classList.add('active');
+            o.start();
+            setTimeout(() => { o.stop(); document.getElementById('txLed').classList.remove('active'); res(); }, d);
         });
     }
 
-    /**
-     * MÓDULO 5: GRÁFICOS Y CANVAS
-     */
-    function drawVisuals() {
-        const freqCanvas = document.getElementById('freqCanvas');
-        const fCtx = freqCanvas.getContext('2d');
-        const timeCanvas = document.getElementById('timeCanvas');
-        const tCtx = timeCanvas.getContext('2d');
-
-        const bufferLength = analyzer.frequencyBinCount;
-        const dataFreq = new Uint8Array(bufferLength);
-        const dataTime = new Uint8Array(bufferLength);
-
-        function render() {
-            analyzer.getByteFrequencyData(dataFreq);
-            analyzer.getByteTimeDomainData(dataTime);
-
-            // Render Freq
-            fCtx.fillStyle = '#000';
-            fCtx.fillRect(0, 0, freqCanvas.width, freqCanvas.height);
-            const barWidth = (freqCanvas.width / bufferLength) * 2.5;
-            let x = 0;
-            for(let i = 0; i < bufferLength; i++) {
-                const barHeight = dataFreq[i] / 2;
-                fCtx.fillStyle = `rgb(0, ${dataFreq[i] + 100}, 65)`;
-                fCtx.fillRect(x, freqCanvas.height - barHeight, barWidth, barHeight);
-                x += barWidth + 1;
-            }
-
-            // Render Time
-            tCtx.fillStyle = '#000';
-            tCtx.fillRect(0, 0, timeCanvas.width, timeCanvas.height);
-            tCtx.lineWidth = 2;
-            tCtx.strokeStyle = 'var(--neon-green)';
-            tCtx.beginPath();
-            const sliceWidth = timeCanvas.width * 1.0 / bufferLength;
-            let tx = 0;
-            for(let i = 0; i < bufferLength; i++) {
-                const v = dataTime[i] / 128.0;
-                const y = v * timeCanvas.height / 2;
-                if(i === 0) tCtx.moveTo(tx, y);
-                else tCtx.lineTo(tx, y);
-                tx += sliceWidth;
-            }
-            tCtx.lineTo(timeCanvas.width, timeCanvas.height/2);
-            tCtx.stroke();
-
-            requestAnimationFrame(render);
-        }
-        render();
-    }
-
-    /**
-     * MÓDULO 6: UTILIDADES
-     */
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-    
-    function appendToTerminal(text) {
-        const term = document.getElementById('rxTerminal');
-        term.innerText += text;
-        term.scrollTop = term.scrollHeight;
-    }
-
-    function addLog(msg) {
-        const log = document.getElementById('logList');
-        const time = new Date().toLocaleTimeString();
-        log.innerHTML = `<div class="log-entry"><span class="log-time">[${time}]</span> ${msg}</div>` + log.innerHTML;
-    }
-
-    function stopTX() { isTxRunning = false; addLog("TX INTERRUMPIDO."); }
-    function clearTerminal() { document.getElementById('rxTerminal').innerText = ""; }
-    function quickTX(msg) { document.getElementById('txInput').value = msg; transmitMessage(); }
-
-    // Sync Sliders
-    document.querySelectorAll('input[type="range"]').forEach(s => {
-        s.addEventListener('input', (e) => {
-            const spanId = e.target.id.replace('Slider', 'Val');
-            if(document.getElementById(spanId)) document.getElementById(spanId).innerText = e.target.value;
-        });
-    });
-
+    function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
 </script>
+
 </body>
 </html>
