@@ -3,464 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Amateur Toolbox - Cuba</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Radio Cartoon Studio V5</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&family=Permanent+Marker&family=Luckiest+Guy&family=Chakra+Petch:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        
+        /* Estilos para la Cinemática de Inicio */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB, #ffffff); /* Cielo azul claro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        #sun {
+            position: absolute;
+            bottom: -50px;
+            width: 200px; height: 200px;
+            background-color: #FFD700; /* Dorado */
+            border-radius: 50%;
+            box-shadow: 0 0 50px #FFD700;
+            animation: rise 3s ease-out forwards;
+        }
+        #intro-logo {
+            font-family: 'Bangers', cursive;
+            font-size: 80px;
+            color: white;
+            text-shadow: 8px 8px 0px #000;
+            opacity: 0;
+            animation: fadeInLogo 2s ease-in 2.5s forwards;
+            position: relative; /* Para que aparezca sobre el sol */
+            z-index: 10;
+        }
+        #intro-slogan {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 20px;
+            color: #000;
+            opacity: 0;
+            animation: fadeInLogo 2s ease-in 3.5s forwards;
+            margin-top: 15px;
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes rise {
+            from { bottom: -50px; }
+            to { bottom: calc(50% - 100px); } /* Sube a la mitad de la pantalla */
+        }
+        @keyframes fadeInLogo {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOutIntro {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+        .hide-intro { animation: fadeOutIntro 1s ease-out 0s forwards; }
+
+        /* Estilos del Editor (igual que antes, pero con nuevas fuentes) */
+        :root {
+            --primary: #00f2ff;
+            --yellow: #ffde00;
+            --comic-border: 4px solid #000;
+            --comic-shadow: 5px 5px 0px #000;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #e2e8f0;
+            font-family: sans-serif; /* Base para el editor */
+            background: #1a1a1a;
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column; 
+            min-height: 100vh;
         }
 
-        .mono { font-family: 'JetBrains+Mono', monospace; }
-        
-        .card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #334155;
+        @media (min-width: 768px) {
+            body { flex-direction: row; }
         }
 
-        .input-field {
-            background: #0f172a;
-            border: 1px solid #475569;
-            color: #f8fafc;
-            padding: 0.5rem;
-            border-radius: 6px;
+        .sidebar {
             width: 100%;
-            font-size: 0.9rem;
+            background: #222;
+            padding: 20px;
+            border-bottom: 3px solid #000;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        .btn-primary {
-            background: #3b82f6;
+        @media (min-width: 768px) {
+            .sidebar { width: 350px; height: 100vh; border-bottom: none; border-right: 3px solid #000; }
+        }
+
+        .tool-box { background: #333; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 2px solid #444; }
+        h3 { margin: 0 0 10px 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
+
+        .canvas-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        #poster {
+            width: 90vw; 
+            height: 126vw; 
+            max-width: 450px; 
+            max-height: 630px;
+            background: linear-gradient(135deg, #7000ff, #ff0080);
+            border: 5px solid #000;
+            position: relative;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .draggable {
+            position: absolute;
+            cursor: grab; /* Cambiado a grab */
+            text-align: center;
+            line-height: 1.1;
+            user-select: none;
+            word-wrap: break-word;
+            max-width: 90%;
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: all 0.2s;
+            text-shadow: 
+                3px 3px 0 #000, -2px -2px 0 #000, 
+                2px -2px 0 #000, -2px 2px 0 #000,
+                0px 4px 0 #000;
+            padding: 5px; /* Pequeño padding para mejor selección */
         }
 
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
+        /* Fuentes específicas para cada clase o para aplicar al seleccionar */
+        .text-title { font-size: 40px; color: var(--yellow); font-family: 'Bangers', cursive; }
+        .text-date { font-size: 25px; color: #ff3e3e; font-family: 'Permanent Marker', cursive; }
+        .text-info { font-size: 20px; color: #00ff88; font-family: 'Chakra Petch', sans-serif; }
+        .draggable img { max-width: 100%; height: auto; border: var(--comic-border); }
 
-        .btn-secondary {
-            background: #475569;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-        }
+        .draggable.selected { outline: 3px dashed var(--primary); outline-offset: 5px; cursor: grabbing; }
 
-        .tab-btn {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
+        button, select {
+            width: 100%; padding: 10px; margin-bottom: 8px; border: 3px solid #000;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transform: translateY(0);
+            transition: 0.1s; box-shadow: 3px 3px 0 #000;
         }
+        button:active, select:active { transform: translate(2px, 2px); box-shadow: none; }
+        .btn-add { background: var(--yellow); color: #000; }
+        .btn-save { background: #00ff88; font-size: 18px; margin-top: 10px; }
 
-        .tab-btn.active {
-            border-bottom: 2px solid #3b82f6;
-            color: #3b82f6;
-        }
-
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .sync-qrz {
-            background: #f97316;
-            color: white;
+        textarea, input[type="color"] {
+            width: 100%; padding: 8px; border-radius: 5px; border: 2px solid #000; margin-bottom: 10px;
+            box-sizing: border-box; /* Para que el padding no afecte el width */
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div class="max-w-5xl mx-auto">
-        <!-- Header -->
-        <header class="mb-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-blue-400">Radio Amateur Toolbox</h1>
-                <p class="text-slate-400">Herramientas esenciales para el operador Cubano</p>
-            </div>
-            <div id="clock-container" class="flex flex-col items-end">
-                <div id="clock" class="text-2xl font-bold mono bg-slate-800 p-2 rounded border border-slate-700">
-                    00:00:00 UTC
-                </div>
-                <span class="text-xs text-slate-500 mt-1">Hora universal coordinada</span>
-            </div>
-        </header>
+    <div id="intro-screen">
+        <div id="sun"></div>
+        <div id="intro-logo">RADIO COOL</div>
+        <div id="intro-slogan">Editor de poster, Por CL7ADV.</div>
+    </div>
 
-        <!-- Navigation Tabs -->
-        <nav class="flex border-b border-slate-700 mb-6 overflow-x-auto whitespace-nowrap">
-            <div class="tab-btn active" onclick="showTab('calc')">Antenas</div>
-            <div class="tab-btn" onclick="showTab('log')">Libro de Guardia</div>
-            <div class="tab-btn" onclick="showTab('refs')">Referencia</div>
-            <div class="tab-btn" onclick="showTab('prop')">Propagación</div>
-        </nav>
-
-        <!-- Tab Content: Antenna Calculator -->
-        <div id="tab-calc" class="tab-content">
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="card">
-                    <h2 class="text-xl font-bold mb-4 flex items-center">
-                        <span class="mr-2">📡</span> Calculadora de Dipolo (1/2 λ)
-                    </h2>
-                    <label class="block mb-2 text-sm text-slate-400">Frecuencia (MHz)</label>
-                    <input type="number" id="freq-input" class="input-field mb-4" placeholder="Ej: 7.100" step="0.001">
-                    <button onclick="calculateAntenna()" class="btn-primary w-full">Calcular Longitudes</button>
-                    
-                    <div id="antenna-results" class="mt-6 hidden">
-                        <div class="p-4 bg-slate-900 rounded border border-blue-500/30">
-                            <p class="text-sm text-slate-400">Longitud total:</p>
-                            <p class="text-2xl font-bold text-blue-400" id="total-len">0.00 m</p>
-                            <p class="text-sm text-slate-400 mt-2">Cada brazo (1/4 λ):</p>
-                            <p class="text-xl font-bold text-green-400" id="arm-len">0.00 m</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2 class="text-xl font-bold mb-4">Tips de Ajuste</h2>
-                    <ul class="text-sm text-slate-300 space-y-2">
-                        <li>• Para dipolos, usa el factor 142.5 / Freq(MHz).</li>
-                        <li>• Deja siempre un margen extra para el nudo.</li>
-                        <li>• Si la ROE es alta en frecuencia baja, la antena está larga.</li>
-                        <li>• Si la ROE es alta en frecuencia alta, la antena está corta.</li>
-                    </ul>
-                </div>
-            </div>
+    <div class="sidebar">
+        <h2 style="text-align: center; color: var(--yellow);">RADIO EDIT PRO V5</h2>
+        
+        <div class="tool-box">
+            <h3>🖼️ Fondo y Logos</h3>
+            <label style="font-size: 12px;">Fondo del Póster:</label>
+            <input type="file" id="bg-file" accept="image/*">
+            <button class="btn-add" onclick="addImage()">+ Subir Foto/Logo</button>
         </div>
 
-        <!-- Tab Content: Logbook -->
-        <div id="tab-log" class="tab-content hidden">
-            <!-- Sync Config (QRZ) -->
-            <div class="card mb-6 border-orange-500/30">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold flex items-center">
-                        <span class="mr-2">☁️</span> Sincronización QRZ.com
-                    </h2>
-                    <div id="qrz-status" class="text-xs text-slate-500 italic">No configurado</div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input type="password" id="qrz-key" class="input-field" placeholder="Tu QRZ API Key">
-                    <button onclick="syncToQRZ()" class="btn-primary bg-orange-600 hover:bg-orange-700">Subir Pendientes</button>
-                    <button onclick="exportADIF()" class="btn-secondary">Exportar ADIF (.adi)</button>
-                </div>
-            </div>
-
-            <!-- New Entry -->
-            <div class="card mb-6">
-                <h2 class="text-xl font-bold mb-4">Registrar Contacto (QSO)</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="text-xs text-slate-400">Indicativo</label>
-                        <input type="text" id="log-call" class="input-field" placeholder="CO/CM/...">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">Fecha/Hora UTC (Manual)</label>
-                        <input type="datetime-local" id="log-time" class="input-field text-xs">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">RST (S/R)</label>
-                        <input type="text" id="log-rst" class="input-field" placeholder="59 / 599">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">Banda</label>
-                        <select id="log-band" class="input-field">
-                            <option value="40m">40m</option>
-                            <option value="80m">80m</option>
-                            <option value="20m">20m</option>
-                            <option value="15m">15m</option>
-                            <option value="10m">10m</option>
-                            <option value="2m">2m</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">Modo</label>
-                        <select id="log-mode" class="input-field">
-                            <option value="SSB">SSB</option>
-                            <option value="CW">CW</option>
-                            <option value="FT8">FT8</option>
-                            <option value="FM">FM</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">Nombre Op.</label>
-                        <input type="text" id="log-name" class="input-field" placeholder="Opcional">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-400">Locator (Gridsquare)</label>
-                        <input type="text" id="log-grid" class="input-field" placeholder="Ej: EL93">
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="addLogEntry()" class="btn-primary w-full py-2">Guardar QSO</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">Historial Local</h2>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="text-slate-400 border-b border-slate-700">
-                            <tr>
-                                <th class="py-2">Fecha/Hora (UTC)</th>
-                                <th>Callsign</th>
-                                <th>RST</th>
-                                <th>Banda</th>
-                                <th>Modo</th>
-                                <th>Grid</th>
-                                <th>Sinc.</th>
-                            </tr>
-                        </thead>
-                        <tbody id="log-table-body">
-                            <!-- JS populated -->
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-4 flex justify-between">
-                    <button onclick="clearLogs()" class="text-xs text-red-400 hover:underline">Borrar base de datos local</button>
-                    <span id="log-count" class="text-xs text-slate-500">0 contactos</span>
-                </div>
-            </div>
+        <div class="tool-box">
+            <h3>✍️ Añadir Textos</h3>
+            <button class="btn-add" onclick="addText('text-title', 'TÍTULO SHOW')">TÍTULO</button>
+            <button class="btn-add" onclick="addText('text-date', '📅 SÁBADO 20:00')">FECHA/HORA</button>
+            <button class="btn-add" onclick="addText('text-info', '📍 99.9 FM | @RADIO')">DATOS / DIAL</button>
         </div>
 
-        <!-- Tab Content: Reference -->
-        <div id="tab-refs" class="tab-content hidden">
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="card">
-                    <h2 class="text-xl font-bold mb-4">Código Q Común</h2>
-                    <div class="space-y-1 text-sm">
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QRM</span><span class="text-slate-400">Interferencia</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QRN</span><span class="text-slate-400">Estática / Ruido</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QRP</span><span class="text-slate-400">Baja potencia</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QRT</span><span class="text-slate-400">Fin de transmisión</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QRZ</span><span class="text-slate-400">¿Quién me llama?</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QSL</span><span class="text-slate-400">Confirmación</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QSO</span><span class="text-slate-400">Comunicado</span></div>
-                        <div class="flex justify-between border-b border-slate-700 py-1"><span>QTH</span><span class="text-slate-400">Ubicación</span></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2 class="text-xl font-bold mb-4">Alfabeto Fonético</h2>
-                    <div class="grid grid-cols-2 text-xs gap-1">
-                        <div>A: Alpha</div><div>B: Bravo</div><div>C: Charlie</div><div>D: Delta</div>
-                        <div>E: Echo</div><div>F: Foxtrot</div><div>G: Golf</div><div>H: Hotel</div>
-                        <div>I: India</div><div>J: Juliet</div><div>K: Kilo</div><div>L: Lima</div>
-                        <div>M: Mike</div><div>N: November</div><div>O: Oscar</div><div>P: Papa</div>
-                        <div>Q: Quebec</div><div>R: Romeo</div><div>S: Sierra</div><div>T: Tango</div>
-                        <div>U: Uniform</div><div>V: Victor</div><div>W: Whiskey</div><div>X: X-ray</div>
-                        <div>Y: Yankee</div><div>Z: Zulu</div>
-                    </div>
-                </div>
+        <div id="editor-panel" class="tool-box" style="display:none;">
+            <h3>🛠️ Editar Seleccionado</h3>
+            <label style="font-size: 12px;">Contenido:</label>
+            <textarea id="edit-content"></textarea>
+            
+            <label style="font-size: 12px;">Color de Texto:</label>
+            <input type="color" id="edit-color">
+
+            <label style="font-size: 12px;">Fuente:</label>
+            <select id="edit-font">
+                <option value="Bangers, cursive">Bangers (Cómic)</option>
+                <option value="Permanent Marker, cursive">Permanent Marker (Marcador)</option>
+                <option value="Luckiest Guy, cursive">Luckiest Guy (Cartel)</option>
+                <option value="Chakra Petch, sans-serif">Chakra Petch (Futurista)</option>
+                <option value="Arial Black, sans-serif">Arial Black (Por defecto)</option>
+            </select>
+
+            <label style="font-size: 12px;">Tamaño (px):</label>
+            <input type="number" id="edit-size" min="10" max="100" value="20">
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="changeZ(1)">Frente</button>
+                <button onclick="changeZ(-1)">Atrás</button>
             </div>
+            <button style="background:#ff4444; color:white;" onclick="deleteEl()">Eliminar</button>
         </div>
 
-        <!-- Tab Content: Propagation -->
-        <div id="tab-prop" class="tab-content hidden">
-            <div class="card text-center p-10">
-                <h2 class="text-2xl font-bold mb-4 text-blue-400">Estado de Bandas</h2>
-                <div class="flex justify-center mb-6">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
-                        <div class="p-4 bg-slate-900 rounded border border-green-500/50">
-                            <p class="text-xs text-slate-400">80m - 40m</p>
-                            <p class="text-xl font-bold text-green-400">EXC</p>
-                        </div>
-                        <div class="p-4 bg-slate-900 rounded border border-green-500/50">
-                            <p class="text-xs text-slate-400">20m - 15m</p>
-                            <p class="text-xl font-bold text-green-400">GOOD</p>
-                        </div>
-                        <div class="p-4 bg-slate-900 rounded border border-yellow-500/50">
-                            <p class="text-xs text-slate-400">10m</p>
-                            <p class="text-xl font-bold text-yellow-400">FAIR</p>
-                        </div>
-                        <div class="p-4 bg-slate-900 rounded border border-red-500/50">
-                            <p class="text-xs text-slate-400">VHF</p>
-                            <p class="text-xl font-bold text-red-400">POOR</p>
-                        </div>
-                    </div>
-                </div>
-                <p class="text-sm text-slate-400 italic">Nota: Datos simulados basados en horario UTC. Requiere conexión para actualización en tiempo real.</p>
-                <button class="btn-primary mt-6" onclick="window.location.reload()">Refrescar Datos</button>
-            </div>
-        </div>
+        <button class="btn-save" onclick="download()">DESCARGAR PÓSTER</button>
+    </div>
 
-        <!-- Footer -->
-        <footer class="mt-12 text-center text-slate-500 text-sm">
-            <p>73's de Radio Amateur Toolbox | Creado para el radioaficionado de corazón</p>
-        </footer>
+    <div class="canvas-area">
+        <div id="poster">
+            <div class="draggable text-title" style="top:40px; left:20px; z-index: 5;">PROGRAMA RADIO</div>
+        </div>
     </div>
 
     <script>
-        // Actualizar Reloj UTC y Sugerir Hora en el Log
-        function updateTime() {
-            const now = new Date();
-            const utc = now.toISOString().split('T')[1].split('.')[0];
-            document.getElementById('clock').innerText = utc + ' UTC';
-            
-            // Si el campo de tiempo está vacío, sugerir la hora actual
-            const logTimeInput = document.getElementById('log-time');
-            if(!logTimeInput.value) {
-                // Formato para input datetime-local: YYYY-MM-DDThh:mm
-                const year = now.getUTCFullYear();
-                const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(now.getUTCDate()).padStart(2, '0');
-                const hours = String(now.getUTCHours()).padStart(2, '0');
-                const mins = String(now.getUTCMinutes()).padStart(2, '0');
-                logTimeInput.value = `${year}-${month}-${day}T${hours}:${mins}`;
+        let selectedEl = null;
+
+        // Función de selección
+        function select(el) {
+            if(selectedEl) selectedEl.classList.remove('selected');
+            selectedEl = el;
+            selectedEl.classList.add('selected');
+            document.getElementById('editor-panel').style.display = 'block';
+
+            // Cargar valores al panel de edición
+            document.getElementById('edit-content').value = el.innerText || "";
+            document.getElementById('edit-color').value = rgbToHex(el.style.color || window.getComputedStyle(el).color);
+            document.getElementById('edit-font').value = el.style.fontFamily || window.getComputedStyle(el).fontFamily;
+            document.getElementById('edit-size').value = parseInt(el.style.fontSize) || parseInt(window.getComputedStyle(el).fontSize);
+        }
+
+        // Conversor de RGB a Hex (para el color picker)
+        function rgbToHex(rgb) {
+            if (!rgb || rgb.startsWith('#')) return rgb; // Ya es hex o vacío
+            const parts = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!parts) return rgb; // No es RGB válido
+            delete(parts[0]);
+            for (let i = 1; i <= 3; ++i) {
+                parts[i] = parseInt(parts[i]).toString(16);
+                if (parts[i].length === 1) parts[i] = '0' + parts[i];
             }
-        }
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        // Navegación de Pestañas
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            document.getElementById('tab-' + tabId).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+            return '#' + parts.join('');
         }
 
-        // Calculadora de Antenas
-        function calculateAntenna() {
-            const freq = document.getElementById('freq-input').value;
-            if (!freq || freq <= 0) return;
+        // Función de arrastre (compatible con Mouse y Touch)
+        function makeDraggable(el) {
+            let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+            const dragStart = (e) => {
+                select(el);
+                e.preventDefault(); // Evita scroll en móvil al arrastrar
+                const clientX = e.clientX || e.touches[0].clientX;
+                const clientY = e.clientY || e.touches[0].clientY;
+                p3 = clientX; p4 = clientY;
 
-            const total = 142.5 / freq;
-            const arm = total / 2;
-
-            document.getElementById('total-len').innerText = total.toFixed(2) + ' m';
-            document.getElementById('arm-len').innerText = arm.toFixed(2) + ' m';
-            document.getElementById('antenna-results').classList.remove('hidden');
-        }
-
-        // Gestión del Logbook (LocalStorage)
-        let logs = JSON.parse(localStorage.getItem('radio_logs')) || [];
-
-        function renderLogs() {
-            const body = document.getElementById('log-table-body');
-            body.innerHTML = '';
-            
-            logs.slice().reverse().forEach(log => {
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-800 hover:bg-slate-800/50 transition";
-                tr.innerHTML = `
-                    <td class="py-3 text-slate-400 font-mono text-xs">${log.date.replace('T', ' ')}</td>
-                    <td class="font-bold text-blue-300">${log.call}</td>
-                    <td>${log.rst}</td>
-                    <td>${log.band}</td>
-                    <td><span class="status-badge bg-slate-700">${log.mode}</span></td>
-                    <td class="text-slate-400 text-xs uppercase">${log.grid || '-'}</td>
-                    <td>${log.synced ? '✅' : '⏳'}</td>
-                `;
-                body.appendChild(tr);
-            });
-            document.getElementById('log-count').innerText = `${logs.length} contactos`;
-        }
-
-        function addLogEntry() {
-            const call = document.getElementById('log-call').value.toUpperCase();
-            const time = document.getElementById('log-time').value;
-            const rst = document.getElementById('log-rst').value || '59';
-            const band = document.getElementById('log-band').value;
-            const mode = document.getElementById('log-mode').value;
-            const name = document.getElementById('log-name').value;
-            const grid = document.getElementById('log-grid').value.toUpperCase();
-
-            if (!call) {
-                alert("El indicativo es obligatorio");
-                return;
-            }
-
-            const entry = {
-                date: time,
-                call,
-                rst,
-                band,
-                mode,
-                name,
-                grid,
-                synced: false
+                document.onmouseup = document.ontouchend = () => {
+                    document.onmouseup = document.onmousemove = document.ontouchend = document.ontouchmove = null;
+                };
+                document.onmousemove = document.ontouchmove = (e) => {
+                    const cx = e.clientX || e.touches[0].clientX;
+                    const cy = e.clientY || e.touches[0].clientY;
+                    p1 = p3 - cx; p2 = p4 - cy;
+                    p3 = cx; p4 = cy;
+                    el.style.top = (el.offsetTop - p2) + "px";
+                    el.style.left = (el.offsetLeft - p1) + "px";
+                };
             };
-
-            logs.push(entry);
-            localStorage.setItem('radio_logs', JSON.stringify(logs));
-            renderLogs();
-            
-            // Limpiar campos principales
-            document.getElementById('log-call').value = '';
-            document.getElementById('log-name').value = '';
-            document.getElementById('log-grid').value = '';
-            // Resetear hora al instante actual
-            document.getElementById('log-time').value = ''; 
-            updateTime();
+            el.onmousedown = el.ontouchstart = dragStart;
         }
 
-        // Simulación de Sincronización QRZ
-        function syncToQRZ() {
-            const apiKey = document.getElementById('qrz-key').value;
-            if(!apiKey) {
-                alert("Por favor ingresa tu API Key de QRZ Logbook para sincronizar.");
-                return;
-            }
-
-            const unsynced = logs.filter(l => !l.synced);
-            if(unsynced.length === 0) {
-                alert("No hay contactos nuevos para subir.");
-                return;
-            }
-
-            // Simulación de proceso API
-            document.getElementById('qrz-status').innerText = "Sincronizando...";
-            
-            setTimeout(() => {
-                logs.forEach(l => l.synced = true);
-                localStorage.setItem('radio_logs', JSON.stringify(logs));
-                renderLogs();
-                document.getElementById('qrz-status').innerText = "Sincronización completa";
-                alert(`Se han subido ${unsynced.length} contactos a QRZ.`);
-            }, 2000);
+        // --- FUNCIONES DE ADICIÓN ---
+        function addText(type, val) {
+            const div = document.createElement('div');
+            div.className = `draggable ${type}`;
+            div.innerText = val;
+            div.style.left = '50px'; div.style.top = '150px';
+            div.style.zIndex = 10;
+            document.getElementById('poster').appendChild(div);
+            makeDraggable(div);
+            select(div);
         }
 
-        // Exportación ADIF Simple
-        function exportADIF() {
-            if(logs.length === 0) return alert("No hay datos para exportar.");
-            
-            let adif = "ADIF Export from Radio Amateur Toolbox\n<EOH>\n";
-            logs.forEach(log => {
-                const date = log.date.split('T')[0].replace(/-/g, '');
-                const time = log.date.split('T')[1].replace(/:/g, '');
-                adif += `<CALL:${log.call.length}>${log.call} <QSO_DATE:${date.length}>${date} <TIME_ON:${time.length}>${time} <BAND:${log.band.length}>${log.band} <MODE:${log.mode.length}>${log.mode} <RST_SENT:${log.rst.length}>${log.rst} <EOR>\n`;
+        function addImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = e => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    img.className = 'draggable';
+                    img.style.width = '150px';
+                    img.style.border = '4px solid black';
+                    img.style.zIndex = 10;
+                    document.getElementById('poster').appendChild(img);
+                    makeDraggable(img);
+                    select(img);
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            };
+            input.click();
+        }
+
+        // --- EVENTOS DEL PANEL DE EDICIÓN ---
+        document.getElementById('edit-content').addEventListener('input', e => {
+            if(selectedEl && selectedEl.tagName !== 'IMG') selectedEl.innerText = e.target.value;
+        });
+
+        document.getElementById('edit-color').oninput = e => {
+            if(selectedEl && selectedEl.tagName !== 'IMG') selectedEl.style.color = e.target.value;
+            else if (selectedEl && selectedEl.tagName === 'IMG') selectedEl.style.borderColor = e.target.value; // Para cambiar color de borde de imagen
+        };
+
+        document.getElementById('edit-font').onchange = e => {
+            if(selectedEl && selectedEl.tagName !== 'IMG') selectedEl.style.fontFamily = e.target.value;
+        };
+
+        document.getElementById('edit-size').oninput = e => {
+            if(selectedEl && selectedEl.tagName !== 'IMG') selectedEl.style.fontSize = e.target.value + 'px';
+            else if (selectedEl && selectedEl.tagName === 'IMG') {
+                selectedEl.style.width = e.target.value * 3 + 'px'; // Ajuste el tamaño de la imagen de forma relativa
+            }
+        };
+
+        function changeZ(v) {
+            if(selectedEl) {
+                let z = parseInt(selectedEl.style.zIndex) || 1;
+                selectedEl.style.zIndex = z + v;
+            }
+        }
+
+        function deleteEl() { if(selectedEl) { selectedEl.remove(); selectedEl = null; document.getElementById('editor-panel').style.display = 'none'; } }
+
+        document.getElementById('bg-file').onchange = e => {
+            const reader = new FileReader();
+            reader.onload = () => document.getElementById('poster').style.backgroundImage = `url(${reader.result})`;
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        function download() {
+            if(selectedEl) selectedEl.classList.remove('selected');
+            html2canvas(document.getElementById('poster'), { scale: 2, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'radio-cartoon.png';
+                link.href = canvas.toDataURL();
+                link.click();
             });
-
-            const blob = new Blob([adif], {type: 'text/plain'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `logbook_${new Date().toISOString().slice(0,10)}.adi`;
-            a.click();
         }
 
-        function clearLogs() {
-            if (confirm('¿Estás seguro de borrar todos los contactos guardados localmente?')) {
-                logs = [];
-                localStorage.removeItem('radio_logs');
-                renderLogs();
-            }
-        }
-
-        // Carga inicial
-        renderLogs();
+        // --- CINETMATICA DE INICIO ---
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('intro-screen').classList.add('hide-intro');
+                document.body.style.overflow = 'auto'; // Permitir scroll después de la intro
+            }, 4500); // Duración total de la animación de intro
+             makeDraggable(document.querySelector('.draggable')); // Inicializar el elemento de texto inicial
+        };
     </script>
 </body>
 </html>
