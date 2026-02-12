@@ -3,528 +3,598 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poster Designer Pro - Edición Comunitaria</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <title>Neon Log Station v5.3.2 - Alfred CL7ADV</title>
     <style>
-        body {
-            background-color: #0f172a;
-            color: white;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
+        :root {
+            --bg-dark: #050a14;
+            --panel-bg: #0d1b2a;
+            --neon-cyan: #00e5ff;
+            --neon-pink: #ff007f;
+            --neon-yellow: #ffea00;
+            --neon-green: #00ff88;
+            --text-main: #e6f1ff;
+            --card-bg: rgba(20, 33, 61, 0.9);
+            --sunrise: linear-gradient(0deg, #ff7e5f 0%, #feb47b 50%, #050a14 100%);
         }
 
-        /* Área de Trabajo Principal */
-        .workspace {
-            display: grid;
-            grid-template-columns: 350px 1fr 300px;
-            height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* El Lienzo del Póster (Canvas de Diseño) */
-        #posterCanvas {
-            width: 450px;
-            height: 650px;
-            background: white;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            color: #1a1a1a;
-            user-select: none;
-        }
-
-        .draggable {
-            position: absolute;
-            cursor: move;
-            transition: outline 0.1s;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            min-height: 20px;
-        }
-        .draggable:hover {
-            outline: 2px dashed #3b82f6;
-        }
-        .draggable.active {
-            outline: 2px solid #3b82f6;
-            z-index: 100;
-        }
-
-        .logo-element img {
-            width: 100%;
-            height: auto;
-            pointer-events: none;
-        }
-
-        #bgImage {
-            position: absolute;
-            width: 100%;
+        body, html {
             height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-            z-index: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
         }
 
-        .tool-panel {
-            background: #1e293b;
-            border-right: 1px solid #334155;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        .edit-panel {
-            background: #1e293b;
-            border-left: 1px solid #334155;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        /* Estilos Tipográficos */
-        .style-elegant { font-family: 'Playfair Display', serif; text-transform: none; }
-        .style-funny { font-family: 'Bangers', cursive; text-transform: uppercase; letter-spacing: 1px; }
-        .style-bold { font-family: 'Inter', sans-serif; font-weight: 900; text-transform: uppercase; }
-
-        input, select, textarea {
-            background: #0f172a !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            width: 100%;
-            font-size: 0.875rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, #3b82f6, #2563eb);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
-
-        .btn-secondary {
-            background: #334155;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .btn-secondary:hover { background: #475569; }
-
-        #loadingOverlay {
+        /* MARCA DE AGUA DEL CREADOR */
+        .watermark {
             position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            bottom: 15px;
+            right: 15px;
+            font-size: 0.75rem;
+            color: rgba(0, 229, 255, 0.5);
+            z-index: 3000;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        /* Estilo de la chapa de "Anuncio" */
-        .ad-badge {
-            background: #ef4444;
-            color: white;
-            padding: 2px 8px;
-            font-size: 10px;
+        /* PANTALLA DE INTRODUCCIÓN */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--sunrise);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 1.5s ease, visibility 1.5s;
+        }
+
+        .sun {
+            width: 100px; height: 100px;
+            background: #fffbe6;
+            border-radius: 50%;
+            box-shadow: 0 0 50px #ffea00, 0 0 100px #ff7e5f;
+            margin-bottom: 20px;
+            animation: pulse 3s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+
+        .intro-text {
+            font-size: 1.5rem;
             font-weight: bold;
-            border-radius: 4px;
-            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: white;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        #main-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 2s ease;
+            overflow-y: auto;
+        }
+
+        header {
+            background: rgba(13, 27, 42, 0.95);
+            padding: 10px 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .time-display {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--neon-green);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        /* MENU CASILLAS */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .menu-item {
+            background: var(--panel-bg);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100px; opacity: 0.7;
+        }
+
+        .menu-item:hover { transform: scale(1.02); opacity: 1; border-color: var(--neon-cyan); }
+        
+        .menu-item.active-item {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2);
+            background: #1b263b; opacity: 1; transform: translateY(-2px);
+        }
+
+        .menu-item .number { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: var(--neon-pink); font-weight: bold; }
+        .menu-item i { font-size: 1.6rem; margin-bottom: 6px; color: var(--neon-yellow); }
+
+        /* PANELES */
+        .log-entry-panel {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border-top: 3px solid var(--neon-pink);
+            margin-bottom: 20px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .active-panel { display: block; animation: slideUp 0.4s ease; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        
+        label { font-size: 0.7rem; color: var(--neon-cyan); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        input, select {
+            background: rgba(27, 38, 59, 0.8);
+            border: 1px solid #444;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+
+        .btn {
+            padding: 14px 20px; border: none; border-radius: 8px; cursor: pointer;
+            font-weight: bold; text-transform: uppercase; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        .btn-pink { background: var(--neon-pink); color: #fff; }
+        .btn-green { background: var(--neon-green); color: #000; }
+        .btn-cyan { background: var(--neon-cyan); color: #000; }
+
+        .table-container { width: 100%; overflow-x: auto; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 0.85rem; }
+        th { background: var(--panel-bg); color: var(--neon-yellow); text-align: left; padding: 12px; border-bottom: 2px solid var(--neon-cyan); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
+        tr:hover { background: rgba(0,229,255,0.05); }
+
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; transition: 0.2s; }
+        .action-btn:hover { transform: scale(1.2); }
+
+        @media (max-width: 600px) {
+            .grid-menu { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <div id="loadingOverlay">
-        <div class="text-center">
-            <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="font-bold tracking-widest">CREANDO TU ANUNCIO...</p>
+<!-- FIRMA DE AGUA -->
+<div class="watermark">CL7ADV-CUBA Creador</div>
+
+<!-- PANTALLA INTRO -->
+<div id="intro-screen">
+    <div class="sun"></div>
+    <div class="intro-text">
+        Amanecer en el Caribe<br>
+        <span style="font-size: 0.8rem; letter-spacing: 2px; color: var(--neon-cyan);">Cargando Estación de Alfred CL7ADV...</span>
+    </div>
+</div>
+
+<div id="main-content">
+    <header>
+        <h1 style="font-size: 1.3rem;">NEON LOG STATION v5.3.2</h1>
+        <p style="font-size: 0.8rem;">Op: <span id="header-op" style="color:var(--neon-yellow)">---</span> | <span id="header-count">0</span> QSOs registrados</p>
+        <div id="clock" class="time-display">00:00:00 UTC</div>
+    </header>
+
+    <div class="container">
+        <!-- CASILLAS -->
+        <div class="grid-menu">
+            <div id="btn-op" class="menu-item" onclick="togglePanel('panel-op', 'btn-op')">
+                <span class="number">00</span><i>👤</i><span>Operador</span>
+            </div>
+            <div id="btn-log" class="menu-item active-item" onclick="togglePanel('panel-log', 'btn-log')">
+                <span class="number">01</span><i>📝</i><span>Nuevo QSO</span>
+            </div>
+            <div id="btn-table" class="menu-item" onclick="togglePanel('panel-table', 'btn-table')">
+                <span class="number">02</span><i>📋</i><span>Libro</span>
+            </div>
+            <div id="btn-import" class="menu-item" onclick="togglePanel('panel-import', 'btn-import')">
+                <span class="number">03</span><i>📥</i><span>Importar</span>
+            </div>
+            <div id="btn-export" class="menu-item" onclick="exportADIF()">
+                <span class="number">04</span><i>💾</i><span>Exportar</span>
+            </div>
+            <div id="btn-clear" class="menu-item" onclick="clearLogs()">
+                <span class="number">05</span><i>🗑️</i><span>Limpiar</span>
+            </div>
+        </div>
+
+        <!-- PANEL OPERADOR -->
+        <div id="panel-op" class="log-entry-panel">
+            <h3 style="color: var(--neon-yellow); margin-bottom: 15px;">Ajustes Estación</h3>
+            <div class="form-row">
+                <div class="form-group"><label>Tu Indicativo</label><input type="text" id="op_call" placeholder="CL7ADV" oninput="saveOperatorData()"></div>
+                <div class="form-group"><label>Tu Nombre</label><input type="text" id="op_name" placeholder="Alfred" oninput="saveOperatorData()"></div>
+                <div class="form-group"><label>Tu Grilla</label><input type="text" id="op_grid" placeholder="FL01aa" oninput="saveOperatorData()"></div>
+            </div>
+        </div>
+
+        <!-- PANEL NUEVO/EDITAR QSO -->
+        <div id="panel-log" class="log-entry-panel active-panel">
+            <h3 id="panel-title" style="color: var(--neon-pink); margin-bottom: 15px;">Registro de Contacto</h3>
+            <input type="hidden" id="edit_id">
+            <div class="form-row">
+                <div class="form-group" style="grid-column: span 2;">
+                    <label>Callsign Corresponsal</label>
+                    <input type="text" id="call" placeholder="Indicativo" onkeyup="this.value = this.value.toUpperCase()">
+                </div>
+                <div class="form-group">
+                    <label>Frecuencia (MHz)</label>
+                    <input type="text" id="freq" placeholder="7.150">
+                </div>
+                <div class="form-group">
+                    <label>Banda</label>
+                    <select id="band">
+                        <option value="40M">40M</option><option value="20M">20M</option>
+                        <option value="15M">15M</option><option value="10M">10M</option>
+                        <option value="6M">6M</option><option value="2M">2M</option>
+                        <option value="70CM">70CM</option><option value="23CM">23CM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Modo</label>
+                    <input list="modes" id="mode" placeholder="Modo...">
+                    <datalist id="modes">
+                        <option value="SSB"><option value="FM"><option value="CW"><option value="FT8">
+                        <option value="FT4"><option value="Digital Voice"><option value="DMR">
+                        <option value="RTTY"><option value="JS8">
+                    </datalist>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha UTC (Ej: 20240520)</label>
+                    <input type="text" id="manual_date" placeholder="Auto si vacío">
+                </div>
+                <div class="form-group">
+                    <label>Hora UTC (Ej: 143005)</label>
+                    <input type="text" id="manual_time" placeholder="Auto si vacío">
+                </div>
+                <div class="form-group"><label>Sent</label><input type="text" id="rst_s" value="59"></div>
+                <div class="form-group"><label>Rcvd</label><input type="text" id="rst_r" value="59"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Comentarios / Nombre</label>
+                <input type="text" id="comment" placeholder="Ej: Juan de Camaguey...">
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="save-btn" class="btn btn-pink" onclick="saveQSO()" style="flex: 2;">💾 Guardar Registro</button>
+                <button id="cancel-edit" class="btn btn-cyan" onclick="resetForm()" style="flex: 1; display: none;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- PANEL TABLA -->
+        <div id="panel-table" class="log-entry-panel">
+            <h3 style="color: var(--neon-cyan); margin-bottom: 10px;">Libro de Guardia</h3>
+            <input type="text" id="search" class="search-box" placeholder="🔎 Filtrar por indicativo..." oninput="renderTable()" style="width:100%; padding:10px; background:#000; border:1px solid var(--neon-cyan); color:var(--neon-green); margin-bottom:15px; border-radius:5px;">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Fecha/Hora UTC</th><th>Callsign</th><th>Freq</th><th>Banda</th><th>Modo</th><th>RST</th><th>Acción</th></tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANEL IMPORTAR -->
+        <div id="panel-import" class="log-entry-panel">
+            <h3 style="color: var(--neon-green); margin-bottom: 15px;">Importar ADIF</h3>
+            <input type="file" id="import-file" style="display: none;" onchange="processImport(this)">
+            <button class="btn btn-green" onclick="document.getElementById('import-file').click()" style="width: 100%;">📁 Abrir Archivo .adi</button>
         </div>
     </div>
+</div>
 
-    <div class="workspace">
+<script>
+    // Almacenamiento e Inicialización
+    let qsoList = JSON.parse(localStorage.getItem('cl7adv_logs_v5_stable')) || [];
+    let opData = JSON.parse(localStorage.getItem('cl7adv_operator_stable')) || { call: "", name: "", grid: "" };
+
+    // Animación de entrada
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const intro = document.getElementById('intro-screen');
+            const main = document.getElementById('main-content');
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.visibility = 'hidden';
+                main.style.opacity = '1';
+                document.body.style.overflow = 'auto';
+            }, 1500);
+        }, 1500); 
+    });
+
+    // SISTEMA DE TIEMPO SÓLIDO (UTC)
+    function getUTCString() {
+        const now = new Date();
+        const y = now.getUTCFullYear();
+        const m = (now.getUTCMonth() + 1).toString().padStart(2, '0');
+        const d = now.getUTCDate().toString().padStart(2, '0');
+        const hh = now.getUTCHours().toString().padStart(2, '0');
+        const mm = now.getUTCMinutes().toString().padStart(2, '0');
+        const ss = now.getUTCSeconds().toString().padStart(2, '0');
         
-        <!-- PANEL IZQUIERDO: CONFIGURACIÓN Y GENERACIÓN -->
-        <aside class="tool-panel space-y-6">
-            <div>
-                <h2 class="text-xl font-black mb-1 italic">POSTER DESIGNER PRO</h2>
-                <p class="text-[10px] text-blue-400 font-bold uppercase tracking-[0.2em] mb-6">Versión Comunitaria 1.0</p>
-            </div>
+        return {
+            date: `${y}${m}${d}`,
+            time: `${hh}${mm}${ss}`,
+            display: `${hh}:${mm}:${ss}`
+        };
+    }
 
-            <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">1. Conectar IA</label>
-                <input type="password" id="apiKey" placeholder="Pega tu API Key de Gemini">
-            </div>
+    function updateClock() {
+        document.getElementById('clock').textContent = getUTCString().display + " UTC";
+    }
+    setInterval(updateClock, 1000);
 
-            <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">2. Imagen del Anuncio</label>
-                <div class="border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-blue-500 transition-colors relative">
-                    <input type="file" id="imageInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                    <p class="text-xs text-slate-400">Subir foto del producto o fondo</p>
-                </div>
-            </div>
+    // Manejo de Paneles
+    function togglePanel(panelId, buttonId) {
+        document.querySelectorAll('.log-entry-panel').forEach(p => p.classList.remove('active-panel'));
+        document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active-item'));
+        document.getElementById(panelId).classList.add('active-panel');
+        document.getElementById(buttonId).classList.add('active-item');
+        if(panelId === 'panel-table') renderTable();
+    }
 
-            <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">3. Tipo de Anuncio</label>
-                <select id="adType">
-                    <option value="venta">Venta / Clasificado</option>
-                    <option value="evento">Evento Comunitario</option>
-                    <option value="servicio">Ofrecimiento de Servicio</option>
-                    <option value="aviso">Aviso / Urgente</option>
-                </select>
-            </div>
+    function saveOperatorData() {
+        opData.call = document.getElementById('op_call').value.toUpperCase();
+        opData.name = document.getElementById('op_name').value;
+        opData.grid = document.getElementById('op_grid').value.toUpperCase();
+        localStorage.setItem('cl7adv_operator_stable', JSON.stringify(opData));
+        document.getElementById('header-op').textContent = opData.call || "---";
+    }
 
-            <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">4. ¿De qué trata?</label>
-                <textarea id="promptInput" rows="3" placeholder="Ej: Vendo bicicleta roja casi nueva, 50€. Contacto: 600..."></textarea>
-            </div>
-
-            <div class="space-y-4">
-                <label class="block text-xs font-bold text-slate-500 uppercase">5. Estilo Visual</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="setGlobalTheme('elegant')" class="btn-secondary">Elegante</button>
-                    <button onclick="setGlobalTheme('funny')" class="btn-secondary">Divertido</button>
-                </div>
-            </div>
-
-            <button id="magicBtn" class="btn-primary w-full mt-4">GENERAR ANUNCIO AHORA</button>
-        </aside>
-
-        <!-- ÁREA CENTRAL: PREVISUALIZACIÓN -->
-        <main class="flex flex-col items-center justify-center bg-slate-900 p-8 overflow-hidden">
-            <div id="posterCanvas">
-                <img id="bgImage" src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000" alt="background">
-                
-                <div id="elTitle" class="draggable active style-bold text-4xl" style="top: 80px; left: 40px; width: 370px;">
-                    ¡ANUNCIO AQUÍ!
-                </div>
-
-                <div id="elDesc" class="draggable style-elegant text-sm bg-white/80 p-4 rounded shadow-sm" style="top: 400px; left: 40px; width: 370px;">
-                    Usa la IA para generar una descripción vendedora para tu comunidad automáticamente.
-                </div>
-
-                <div id="elDetails" class="draggable font-bold text-xs bg-blue-600 text-white px-4 py-2 rounded-full uppercase" style="top: 560px; left: 40px;">
-                    PRECIO | CONTACTO | LUGAR
-                </div>
-            </div>
-            <p class="text-[10px] text-slate-500 mt-4 uppercase font-bold tracking-widest">Diseña libremente arrastrando los elementos</p>
-        </main>
-
-        <!-- PANEL DERECHO: AJUSTES Y EXPORTACIÓN -->
-        <aside class="edit-panel space-y-6">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-slate-700 pb-2">Editor de Capa</h3>
-            
-            <div id="editorControls" class="space-y-4">
-                
-                <div id="textControls" class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Editar Texto</label>
-                        <textarea id="textEdit" rows="3"></textarea>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Tamaño Fuente</label>
-                        <input type="range" id="sizeEdit" min="10" max="150" value="40">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Color</label>
-                        <input type="color" id="colorEdit" class="h-10">
-                    </div>
-                </div>
-
-                <div id="logoControls" class="space-y-4 hidden">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase">Escalar Logo</label>
-                        <input type="range" id="logoSizeEdit" min="20" max="400" value="100">
-                    </div>
-                </div>
-
-                <div class="space-y-2 pt-4">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Fondo de Etiqueta (Opacidad)</label>
-                    <input type="range" id="bgOpacityEdit" min="0" max="100" value="0">
-                </div>
-
-                <div class="pt-4 grid grid-cols-1 gap-2">
-                    <div class="relative">
-                        <input type="file" id="logoInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
-                        <button class="btn-secondary w-full text-[10px] py-3">+ SUBIR LOGO / ICONO</button>
-                    </div>
-                    <button id="addCommentBtn" class="btn-secondary text-[10px] py-3">+ NUEVO TEXTO EXTRA</button>
-                </div>
-
-                <div class="pt-4">
-                    <button id="deleteElementBtn" class="w-full p-2 bg-red-900/30 hover:bg-red-600 rounded text-[9px] font-bold uppercase transition-all">Eliminar seleccionado</button>
-                </div>
-            </div>
-
-            <div class="pt-6 border-t border-slate-700 space-y-3">
-                <button id="downloadJpg" class="w-full p-4 bg-green-600 hover:bg-green-500 rounded text-xs font-black uppercase shadow-lg shadow-green-900/20">DESCARGAR JPG PARA WHATSAPP</button>
-                <button onclick="window.print()" class="w-full p-2 bg-slate-800 hover:bg-slate-700 rounded text-[10px] font-bold uppercase text-slate-400">Versión para Imprimir</button>
-            </div>
-        </aside>
-
-    </div>
-
-    <script type="module">
-        let activeElement = document.getElementById('elTitle');
-        let isDragging = false;
-        let startX, startY, initialLeft, initialTop;
-        let currentTheme = 'elegant';
-
-        const apiKeyInput = document.getElementById('apiKey');
-        const imageInput = document.getElementById('imageInput');
-        const logoInput = document.getElementById('logoInput');
-        const adType = document.getElementById('adType');
-        const addCommentBtn = document.getElementById('addCommentBtn');
-        const bgImage = document.getElementById('bgImage');
-        const magicBtn = document.getElementById('magicBtn');
-        const loading = document.getElementById('loadingOverlay');
-        const posterCanvas = document.getElementById('posterCanvas');
-        const downloadJpg = document.getElementById('downloadJpg');
-
-        // Drag and Drop
-        function makeDraggable(el) {
-            el.addEventListener('mousedown', (e) => {
-                activeElement = el;
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                initialLeft = el.offsetLeft;
-                initialTop = el.offsetTop;
-                
-                updateEditorUI();
-                
-                document.querySelectorAll('.draggable').forEach(d => d.classList.remove('active'));
-                el.classList.add('active');
-            });
+    // SISTEMA DE GUARDADO ROBUSTO
+    function saveQSO() {
+        const call = document.getElementById('call').value.trim().toUpperCase();
+        if(!call) {
+            alert("Error: El indicativo es obligatorio.");
+            return;
         }
 
-        function updateEditorUI() {
-            const isLogo = activeElement.classList.contains('logo-element');
-            document.getElementById('textControls').classList.toggle('hidden', isLogo);
-            document.getElementById('logoControls').classList.toggle('hidden', !isLogo);
+        const utcNow = getUTCString();
+        const editId = document.getElementById('edit_id').value;
+        
+        // Validación de datos manuales
+        let finalDate = document.getElementById('manual_date').value.trim();
+        let finalTime = document.getElementById('manual_time').value.trim();
 
-            if (!isLogo) {
-                document.getElementById('textEdit').value = activeElement.innerText;
-                document.getElementById('sizeEdit').value = parseInt(window.getComputedStyle(activeElement).fontSize);
-                document.getElementById('colorEdit').value = rgbToHex(window.getComputedStyle(activeElement).color);
-            } else {
-                document.getElementById('logoSizeEdit').value = activeElement.offsetWidth;
-            }
-            
-            const bg = window.getComputedStyle(activeElement).backgroundColor;
-            const alpha = bg.match(/rgba?\(.+,\s*([\d.]+)\)/);
-            document.getElementById('bgOpacityEdit').value = alpha ? parseFloat(alpha[1]) * 100 : 0;
-        }
+        // Si están vacíos, usar UTC actual. Si no, limpiar caracteres no numéricos.
+        finalDate = finalDate === "" ? utcNow.date : finalDate.replace(/\D/g, '').substring(0, 8);
+        finalTime = finalTime === "" ? utcNow.time : finalTime.replace(/\D/g, '').substring(0, 6);
 
-        function rgbToHex(rgb) {
-            const result = rgb.match(/\d+/g);
-            return result ? "#" + result.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : "#000000";
-        }
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging || !activeElement) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            activeElement.style.left = `${initialLeft + dx}px`;
-            activeElement.style.top = `${initialTop + dy}px`;
-        });
-
-        document.addEventListener('mouseup', () => isDragging = false);
-
-        // Inicializar
-        document.querySelectorAll('.draggable').forEach(makeDraggable);
-
-        // Estilo Global
-        window.setGlobalTheme = (theme) => {
-            currentTheme = theme;
-            const title = document.getElementById('elTitle');
-            const desc = document.getElementById('elDesc');
-            title.className = `draggable active ${theme === 'elegant' ? 'style-elegant text-4xl italic font-bold' : 'style-funny text-5xl font-black'}`;
-            desc.className = `draggable ${theme === 'elegant' ? 'style-elegant text-sm bg-white/80 p-4 rounded' : 'style-bold text-xs bg-yellow-400 p-2 uppercase'}`;
+        const qso = {
+            id: editId ? parseInt(editId) : Date.now(),
+            call: call,
+            freq: document.getElementById('freq').value.trim(),
+            band: document.getElementById('band').value,
+            mode: document.getElementById('mode').value.toUpperCase() || "SSB",
+            rst_s: document.getElementById('rst_s').value.trim() || "59",
+            rst_r: document.getElementById('rst_r').value.trim() || "59",
+            date: finalDate,
+            time: finalTime,
+            comment: document.getElementById('comment').value.trim()
         };
 
-        // Carga de Logos
-        logoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const div = document.createElement('div');
-                    div.className = 'draggable logo-element';
-                    div.style.width = '80px';
-                    div.style.top = '20px';
-                    div.style.right = '20px';
-                    div.style.left = 'auto'; // Permitir posicionamiento libre
-                    div.innerHTML = `<img src="${ev.target.result}" alt="logo">`;
-                    posterCanvas.appendChild(div);
-                    makeDraggable(div);
-                };
-                reader.readAsDataURL(file);
+        if (editId) {
+            const index = qsoList.findIndex(q => q.id === qso.id);
+            if (index !== -1) {
+                qsoList[index] = qso;
+                alert("Registro actualizado.");
             }
-        });
-
-        // Textos Adicionales
-        addCommentBtn.addEventListener('click', () => {
-            const div = document.createElement('div');
-            div.className = 'draggable style-bold text-[10px] bg-white p-2 border border-black';
-            div.style.top = '300px';
-            div.style.left = '50px';
-            div.innerText = 'Escribe aquí tu nota...';
-            posterCanvas.appendChild(div);
-            makeDraggable(div);
-        });
-
-        // Eliminar
-        document.getElementById('deleteElementBtn').addEventListener('click', () => {
-            if (activeElement && !['elTitle', 'elDesc', 'elDetails'].includes(activeElement.id)) {
-                activeElement.remove();
-                activeElement = null;
-            }
-        });
-
-        // Sincronización Editor
-        document.getElementById('textEdit').addEventListener('input', (e) => {
-            if (activeElement && !activeElement.classList.contains('logo-element')) {
-                activeElement.innerText = e.target.value;
-            }
-        });
-
-        document.getElementById('sizeEdit').addEventListener('input', (e) => {
-            if (activeElement && !activeElement.classList.contains('logo-element')) {
-                activeElement.style.fontSize = `${e.target.value}px`;
-            }
-        });
-
-        document.getElementById('logoSizeEdit').addEventListener('input', (e) => {
-            if (activeElement && activeElement.classList.contains('logo-element')) {
-                activeElement.style.width = `${e.target.value}px`;
-            }
-        });
-
-        document.getElementById('colorEdit').addEventListener('input', (e) => {
-            if (activeElement) activeElement.style.color = e.target.value;
-        });
-
-        document.getElementById('bgOpacityEdit').addEventListener('input', (e) => {
-            if (activeElement) activeElement.style.backgroundColor = `rgba(255,255,255,${e.target.value/100})`;
-        });
-
-        // EXPORTACIÓN JPG
-        downloadJpg.addEventListener('click', () => {
-            loading.style.display = 'flex';
-            document.querySelectorAll('.draggable').forEach(d => d.classList.remove('active'));
-            
-            html2canvas(posterCanvas, {
-                useCORS: true,
-                scale: 3, // Super alta resolución para móvil
-                backgroundColor: null
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Anuncio_${adType.value}_${Date.now()}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.95);
-                link.click();
-                loading.style.display = 'none';
-            });
-        });
-
-        // IA GEMINI INTEGRATION
-        async function fetchGemini(prompt, base64) {
-            const key = apiKeyInput.value.trim();
-            if (!key) throw new Error("Falta la API Key");
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
-            
-            const parts = [{ text: prompt }];
-            if (base64) parts.push({ inlineData: { mimeType: "image/png", data: base64 } });
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                headline: { type: "string" },
-                                body: { type: "string" },
-                                info: { type: "string" },
-                                accentColor: { type: "string" }
-                            }
-                        }
-                    }
-                })
-            });
-
-            const data = await response.json();
-            if (data.error) throw new Error(data.error.message);
-            return JSON.parse(data.candidates[0].content.parts[0].text);
+        } else {
+            qsoList.unshift(qso);
+            alert("QSO grabado con éxito.");
         }
 
-        magicBtn.addEventListener('click', async () => {
-            const key = apiKeyInput.value.trim();
-            const prompt = document.getElementById('promptInput').value;
-            const type = adType.value;
+        localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
+        resetForm();
+        updateCount();
+        if(editId) togglePanel('panel-table', 'btn-table');
+    }
 
-            if (!key) return alert("Por favor, introduce tu API Key para usar la IA.");
-            if (!prompt) return alert("Escribe un poco sobre qué quieres anunciar.");
+    function resetForm() {
+        document.getElementById('edit_id').value = "";
+        document.getElementById('call').value = "";
+        document.getElementById('comment').value = "";
+        document.getElementById('manual_date').value = "";
+        document.getElementById('manual_time').value = "";
+        document.getElementById('freq').value = "";
+        document.getElementById('rst_s').value = "59";
+        document.getElementById('rst_r').value = "59";
+        
+        document.getElementById('panel-title').textContent = "Registro de Contacto";
+        document.getElementById('panel-title').style.color = "var(--neon-pink)";
+        document.getElementById('save-btn').textContent = "💾 Guardar Registro";
+        document.getElementById('cancel-edit').style.display = "none";
+    }
 
-            loading.style.display = 'flex';
-            
-            try {
-                let base64 = null;
-                if (imageInput.files[0]) {
-                    const reader = new FileReader();
-                    base64 = await new Promise(resolve => {
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.readAsDataURL(imageInput.files[0]);
+    // CARGA DE EDICIÓN SIN ERRORES
+    function editQSO(id) {
+        const q = qsoList.find(item => item.id === id);
+        if (!q) return;
+
+        document.getElementById('edit_id').value = q.id;
+        document.getElementById('call').value = q.call;
+        document.getElementById('freq').value = q.freq;
+        document.getElementById('band').value = q.band;
+        document.getElementById('mode').value = q.mode;
+        document.getElementById('rst_s').value = q.rst_s;
+        document.getElementById('rst_r').value = q.rst_r;
+        document.getElementById('manual_date').value = q.date;
+        document.getElementById('manual_time').value = q.time;
+        document.getElementById('comment').value = q.comment;
+
+        document.getElementById('panel-title').textContent = "Editando Registro";
+        document.getElementById('panel-title').style.color = "var(--neon-cyan)";
+        document.getElementById('save-btn').textContent = "✅ Actualizar Registro";
+        document.getElementById('cancel-edit').style.display = "block";
+
+        togglePanel('panel-log', 'btn-log');
+    }
+
+    function renderTable() {
+        const f = document.getElementById('search').value.toUpperCase();
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = "";
+        
+        const filtered = qsoList.filter(q => q.call.includes(f));
+        
+        filtered.forEach(q => {
+            tbody.innerHTML += `<tr>
+                <td style="font-family:monospace">${q.date} | ${q.time}</td>
+                <td style="color:var(--neon-yellow); font-weight:bold">${q.call}</td>
+                <td style="color:var(--neon-green)">${q.freq || '---'}</td>
+                <td>${q.band}</td>
+                <td>${q.mode}</td>
+                <td>${q.rst_s}/${q.rst_r}</td>
+                <td>
+                    <button title="Editar" class="action-btn" onclick="editQSO(${q.id})">✏️</button>
+                    <button title="Borrar" class="action-btn" onclick="deleteQSO(${q.id})" style="color:red">❌</button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    function deleteQSO(id) {
+        if(confirm("¿Seguro que deseas eliminar este registro?")) {
+            qsoList = qsoList.filter(q => q.id !== id);
+            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
+            renderTable();
+            updateCount();
+        }
+    }
+
+    function updateCount() { 
+        document.getElementById('header-count').textContent = qsoList.length; 
+    }
+
+    function exportADIF() {
+        if(qsoList.length === 0) return alert("El libro está vacío.");
+        
+        let adi = `ADIF Export - NEON LOG STATION v5.3.2\n`;
+        adi += `<PROGRAMID:12>NEONLOGSTN53\n<ADIF_VER:5>3.1.4\n<EOH>\n\n`;
+
+        qsoList.forEach(q => {
+            adi += `<CALL:${q.call.length}>${q.call}`;
+            adi += `<QSO_DATE:${q.date.length}>${q.date}`;
+            adi += `<TIME_ON:${q.time.length}>${q.time}`;
+            adi += `<BAND:${q.band.length}>${q.band}`;
+            adi += `<MODE:${q.mode.length}>${q.mode}`;
+            adi += `<RST_SENT:${q.rst_s.length}>${q.rst_s}`;
+            adi += `<RST_RCVD:${q.rst_r.length}>${q.rst_r}`;
+            if(q.freq) adi += `<FREQ:${q.freq.length}>${q.freq}`;
+            if(q.comment) adi += `<COMMENT:${q.comment.length}>${q.comment}`;
+            if(opData.call) adi += `<STATION_CALLSIGN:${opData.call.length}>${opData.call}`;
+            if(opData.name) adi += `<OPERATOR:${opData.name.length}>${opData.name}`;
+            adi += `<EOR>\n`;
+        });
+
+        const blob = new Blob([adi], {type: 'text/plain'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Log_Alfred_CL7ADV_${getUTCString().date}.adi`;
+        a.click();
+    }
+
+    function processImport(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const records = text.split(/<EOR>|<eor>/i);
+            let count = 0;
+            records.forEach(rec => {
+                const getF = (tag) => {
+                    const regex = new RegExp(`<${tag}:\\d+>(.*?)(?=<|$)`, 'i');
+                    const match = rec.match(regex);
+                    return match ? match[1].trim() : "";
+                };
+                const call = getF('CALL');
+                if(call) {
+                    qsoList.push({
+                        id: Date.now() + Math.floor(Math.random() * 10000),
+                        call: call.toUpperCase(),
+                        band: getF('BAND'),
+                        mode: getF('MODE') || "SSB",
+                        freq: getF('FREQ'),
+                        rst_s: getF('RST_SENT') || "59",
+                        rst_r: getF('RST_RCVD') || "59",
+                        date: getF('QSO_DATE') || getUTCString().date,
+                        time: getF('TIME_ON') || getUTCString().time,
+                        comment: getF('COMMENT')
                     });
+                    count++;
                 }
+            });
+            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify(qsoList));
+            alert(`Importados ${count} QSOs.`);
+            updateCount();
+            togglePanel('panel-table', 'btn-table');
+        };
+        reader.readAsText(file);
+    }
 
-                const aiPrompt = `Eres un experto en anuncios para comunidades locales. Crea un anuncio de tipo "${type}" basado en esto: "${prompt}". 
-                Analiza la imagen si la hay. 
-                - headline: Título corto y atractivo.
-                - body: Descripción que convenza a la gente de la comunidad.
-                - info: Datos clave (Precio, contacto o lugar) en formato corto.
-                - accentColor: Sugiere un color hexadecimal que pegue con un diseño ${currentTheme}.`;
+    function clearLogs() { 
+        if(confirm("¿Borrar TODO el libro de guardia? Esta acción no se puede deshacer.")) { 
+            qsoList = []; 
+            localStorage.setItem('cl7adv_logs_v5_stable', JSON.stringify([])); 
+            updateCount(); 
+            renderTable(); 
+        } 
+    }
 
-                const result = await fetchGemini(aiPrompt, base64);
-
-                document.getElementById('elTitle').innerText = result.headline;
-                document.getElementById('elDesc').innerText = result.body;
-                document.getElementById('elDetails').innerText = result.info;
-                document.getElementById('elDetails').style.backgroundColor = result.accentColor;
-                
-                if (currentTheme === 'funny') {
-                    document.getElementById('elTitle').style.color = result.accentColor;
-                }
-
-            } catch (err) {
-                alert("Hubo un problema: " + err.message);
-            } finally {
-                loading.style.display = 'none';
-            }
-        });
-
-        // Imagen de Fondo
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => bgImage.src = ev.target.result;
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Persistencia de API Key básica
-        apiKeyInput.addEventListener('change', () => localStorage.setItem('gemini_key', apiKeyInput.value));
-        if(localStorage.getItem('gemini_key')) apiKeyInput.value = localStorage.getItem('gemini_key');
-    </script>
+    window.onload = function() {
+        document.getElementById('op_call').value = opData.call;
+        document.getElementById('op_name').value = opData.name;
+        document.getElementById('op_grid').value = opData.grid;
+        document.getElementById('header-op').textContent = opData.call || "---";
+        updateCount();
+        updateClock();
+    }
+</script>
 </body>
 </html>
